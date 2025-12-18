@@ -13,11 +13,18 @@ import jakarta.annotation.PostConstruct;
 @Component
 public class ActivityWorker {
 
-    private  ActivityQueue queue;
-    private  ActivityRepository repo;
+    private final ActivityQueue queue;
+    private final ActivityRepository repo;
+
+    // ✅ Constructor injection (REQUIRED)
+    public ActivityWorker(ActivityQueue queue, ActivityRepository repo) {
+        this.queue = queue;
+        this.repo = repo;
+    }
 
     @PostConstruct
     public void start() {
+        System.out.println("✅ ActivityWorker started");
         new Thread(this::process).start();
     }
 
@@ -25,24 +32,28 @@ public class ActivityWorker {
         while (true) {
             try {
                 Long id = queue.dequeue();
+                System.out.println("➡️ Dequeued activity id = " + id);
+
                 Activity activity = repo.findById(id).orElse(null);
-                if (activity == null || activity.getStatus() != ActivityStatus.RECEIVED)
-                    continue;
+                if (activity == null) continue;
 
                 activity.setStatus(ActivityStatus.PROCESSING);
                 repo.save(activity);
 
-                // Simulate transformation
-                Thread.sleep(200);
+                Thread.sleep(200); // simulate work
 
                 activity.setStatus(ActivityStatus.PROCESSED);
                 activity.setProcessedAt(LocalDateTime.now());
                 repo.save(activity);
 
+                System.out.println("✅ Activity processed: " + id);
+
             } catch (Exception e) {
-                // log and continue
+                e.printStackTrace();
             }
         }
     }
 }
+
+
 

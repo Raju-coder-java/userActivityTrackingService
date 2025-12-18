@@ -22,18 +22,21 @@ public class ActivityService {
 	        this.repo = repo;
 	        this.queue = queue;
 	    }
-    public void submitActivity(ActivityRequest req, String userId) {
+	    public void submitActivity(ActivityRequest req, String userId) {
 
-        Activity activity = new Activity();
-        activity.setUserId(userId);
-        activity.setType(req.getType());
-        activity.setPayload(req.getPayload());
-        activity.setStatus(ActivityStatus.RECEIVED);
-        activity.setCreatedAt(LocalDateTime.now());
+	        Activity activity = new Activity();
+	        activity.setUserId(userId);
+	        activity.setType(req.getType());
+	        activity.setPayload(req.getPayload());
+	        activity.setStatus(ActivityStatus.RECEIVED);
+	        activity.setCreatedAt(LocalDateTime.now());
 
-        repo.save(activity);
-        queue.enqueue(activity.getId());
-    }
+	        repo.save(activity);
+
+	        System.out.println("📥 Enqueue activity id = " + activity.getId());
+	        queue.enqueue(activity.getId());
+	    }
+
 
     public List<Activity> viewActivities(Authentication auth) {
 
